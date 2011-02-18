@@ -65,10 +65,10 @@ class AppTestCase(TestCase):
         assert res.json['id'] != None
         assert res.json['success'] == "true"
 
-    #def test_list_site(self):
+    def test_list_site(self):
         
-    #    res = self.client.get('/api/site')
-    #    print res.data
+        res = self.client.get('/api/site')
+        print res.data
 
 if __name__ == '__main__':
     unittest.main()
