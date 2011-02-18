@@ -13,7 +13,7 @@ import sys
 BASE_DIR = os.path.join('/var/www/mongoAdmin')
 sys.path.append(BASE_DIR)
 
-from flask import Flask, render_template, request, make_response, g, session, url_for, redirect
+from flask import Flask, request, make_response, g, session, url_for, redirect
 from config import DefaultConfig
 from pymongo import Connection
 from pymongo.objectid import ObjectId
@@ -26,6 +26,7 @@ __all__ = ['create_app']
 DEFAULT_APP_NAME = "mongoAdmin"
 DEFAULT_MODULES  = (
     (views.api, "/api"),
+    (views.web, "/web"),
 )
 
 def create_app(config=None, app_name=None, modules=None):
