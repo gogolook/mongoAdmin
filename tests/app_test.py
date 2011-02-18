@@ -32,6 +32,7 @@ class TestCase(Base):
     def setUp(self):
         self.db = Connection('localhost', 27017).estate
         self.site = self.db.site
+        self.site_id = ''
 
 class AppTestCase(TestCase):
     
@@ -48,12 +49,12 @@ class AppTestCase(TestCase):
 
 
     def test_create_site(self):
-        self.site.remove({'name': '591 rent!'});
+        self.site.remove({'link': 'www.591.com.tw'});
 
-        rules = {
-            'price': '<span>price</span>',
-            'size': '<span>size</span>'
-        }
+        rules = [
+            {'price': '<span>price</span>'},
+            {'size': '<span>size</span>'}
+        ]
         res = self.client.post('/api/site',
             data=json.dumps({
                 'name':'591 rent!',
@@ -68,7 +69,32 @@ class AppTestCase(TestCase):
     def test_list_site(self):
         
         res = self.client.get('/api/site')
-        print res.data
+        #print res.json
+        #self.site_id = res.json['site'][0]['_id']
+
+    def test_show_site(self):
+        
+        res = self.client.get('/api/site')
+        id = res.json['site'][0]['_id']
+        url = '/api/site/' + id
+        res = self.client.post(url,
+            data=json.dumps({
+                'field': 'floor',
+                'rule': '<span>floor</span>'
+            }), content_type='application/json'
+        )
+        assert res.json['message'] == 'creation is done'
+        assert res.json['success'] == 'true'
+
+        res = self.client.post(url,
+            data=json.dumps({
+                'field': 'floor',
+                'rule': '<span>floor</span>'
+            }), content_type='application/json'
+        )
+        
+        assert res.json['message'] == 'field is exist'
+        assert res.json['success'] == 'false'
 
 if __name__ == '__main__':
     unittest.main()

@@ -49,11 +49,11 @@ def site():
         
         name = request.json.get('name', None)
         link = request.json.get('link', None)
-        rules_list = request.json.get('rules', None)
+        rules = request.json.get('rules', None)
 
         if not name:
             return error('false','site\'s name is needed')
-        if rules_list and not isinstance(rules_list, dict):
+        if rules and not isinstance(rules, list):
             return error('false','rule list error!')
 
         if g.site.find_one({'name': name}):
@@ -63,6 +63,34 @@ def site():
             insert_id = g.site.insert({
                 'name': name,
                 'link': link,
-                'rules_list': rules_list
+                'rules': rules
             })
             return ok(id = str(insert_id))
+
+@api.route('/site/<id>', methods=['GET','POST'])
+def show_site(id):
+    if request.method == 'GET':
+        site = g.site.find({'_id': ObjectId(id)})
+        if site:
+            return ok(site = site)
+        else:
+            return error('false','this site isn\'t exist')
+    elif request.method == 'POST':
+        if not request.json:
+            return error('false','this is not json format')
+        
+        #i18n issue
+        field = request.json.get('field', None)
+        rule = request.json.get('rule', None)
+
+        if not field or not rule:
+            return error('false','lack of argument')
+        
+        site = g.site.find_one({'_id': ObjectId(id)})
+        for rule in site['rules']:
+            if field in rule:
+                return error('false','field is exist')
+        else:
+            g.site.update({'_id': ObjectId(id)},
+                {"$push": {'rules': {field: rule}}})
+            return ok(message='creation is done')
