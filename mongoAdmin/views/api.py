@@ -67,7 +67,7 @@ def site():
             })
             return ok(id = str(insert_id))
 
-@api.route('/site/<id>', methods=['GET','POST'])
+@api.route('/site/<id>', methods=['GET','POST','UPDATE'])
 def show_site(id):
     if request.method == 'GET':
         site = g.site.find({'_id': ObjectId(id)})
@@ -94,3 +94,10 @@ def show_site(id):
             g.site.update({'_id': ObjectId(id)},
                 {"$push": {'rules': {field: rule}}})
             return ok(message='creation is done')
+
+    elif request.method == 'PUT':
+        if not request.json:
+            return error('false','this is not json format')
+        return ok(message='ok')
+
+        

@@ -96,5 +96,21 @@ class AppTestCase(TestCase):
         assert res.json['message'] == 'field is exist'
         assert res.json['success'] == 'false'
 
+    def test_upate_rule(self):
+
+        res = self.client.get('/api/site')
+        id = res.json['site'][0]['_id']
+        url = '/api/site/' + id
+        res = self.client.put(url,
+            data=json.dumps({
+                'field': 'floor',
+                'rule': 'test'
+            }), content_type='application/json'
+        )
+
+        assert res.data
+        #assert res.json['message'] == 'update is done'
+        #assert res.json['success'] == 'false'
+
 if __name__ == '__main__':
     unittest.main()
