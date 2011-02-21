@@ -49,7 +49,7 @@ class AppTestCase(TestCase):
 
 
     def test_create_site(self):
-        self.site.remove({'link': 'www.591.com.tw'});
+        self.site.remove();
 
         rules = [
             {'price': '<span>price</span>'},
@@ -108,9 +108,8 @@ class AppTestCase(TestCase):
             }), content_type='application/json'
         )
 
-        assert res.data
-        #assert res.json['message'] == 'update is done'
-        #assert res.json['success'] == 'false'
+        assert res.json['message'] == 'update is done'
+        assert res.json['success'] == 'true'
 
 if __name__ == '__main__':
     unittest.main()

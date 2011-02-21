@@ -2,6 +2,11 @@
 from flask import Module, g, jsonify, request, make_response
 from pymongo.objectid import ObjectId
 
+import logging
+LOG_FILENAME = 'debug.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+
+
 api = Module(__name__)
 
 @api.before_request
@@ -67,7 +72,7 @@ def site():
             })
             return ok(id = str(insert_id))
 
-@api.route('/site/<id>', methods=['GET','POST','UPDATE'])
+@api.route('/site/<id>', methods=['GET','POST','PUT'])
 def show_site(id):
     if request.method == 'GET':
         site = g.site.find({'_id': ObjectId(id)})
@@ -87,17 +92,35 @@ def show_site(id):
             return error('false','lack of argument')
         
         site = g.site.find_one({'_id': ObjectId(id)})
-        for rule in site['rules']:
-            if field in rule:
+        #for s in g.site.find():
+        #    logging.debug('befere insert rule ==> id:%s, link:%s, name:%s, rules:%s',
+        #        s['_id'], s['link'], s['name'], s['rules'])
+
+        for r in site['rules']:
+            if field in r:
                 return error('false','field is exist')
-        else:
-            g.site.update({'_id': ObjectId(id)},
-                {"$push": {'rules': {field: rule}}})
-            return ok(message='creation is done')
+        
+        g.site.update({'_id': ObjectId(id)},
+            {"$push": {'rules': {field: rule}}})
+
+        return ok(message='creation is done')
 
     elif request.method == 'PUT':
         if not request.json:
             return error('false','this is not json format')
-        return ok(message='ok')
 
-        
+        field = request.json.get('field', None)
+        rule = request.json.get('rule', None)
+
+        if not field or not rule:
+            return error('false','lack of argument')
+
+        site = g.site.find_one({'_id': ObjectId(id)})
+
+        for r in site['rules']:
+            if field in r:
+                g.site.update({'_id': ObjectId(id)},
+                    {'rules': {field: rule}})
+                return ok(message='update is done')
+
+        return error('false','field is not exist')
