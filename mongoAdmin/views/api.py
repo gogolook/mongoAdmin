@@ -92,9 +92,8 @@ def show_site(id):
             return error('false','lack of argument')
         
         site = g.site.find_one({'_id': ObjectId(id)})
-        #for s in g.site.find():
-        #    logging.debug('befere insert rule ==> id:%s, link:%s, name:%s, rules:%s',
-        #        s['_id'], s['link'], s['name'], s['rules'])
+        if not site:
+            return error('false','id is wrong')
 
         for r in site['rules']:
             if field in r:
@@ -116,6 +115,8 @@ def show_site(id):
             return error('false','lack of argument')
 
         site = g.site.find_one({'_id': ObjectId(id)})
+        if not site:
+            return error('false','id is wrong')
 
         for r in site['rules']:
             if field in r:
@@ -124,3 +125,27 @@ def show_site(id):
                 return ok(message='update is done')
 
         return error('false','field is not exist')
+
+@api.route('/site/<id>/data', methods=['GET','POST'])
+def data(id):
+    if request.method == 'GET':
+        pass
+    elif request.method == 'POST':
+        if not request.json:
+            return error('false','it is not a json format')
+
+    data = request.json['data']
+
+    #TODO: check which field is not be setting
+    #check_valid(data)
+
+    site = g.site.find_one({'_id': ObjectId(id)})
+    if not site:
+        return error('false','id is wrong')
+
+    data_id = g.data.insert({
+        'site_id': id,
+        'data': data
+    })
+
+    return ok(id = str(data_id))

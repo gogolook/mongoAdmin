@@ -111,5 +111,22 @@ class AppTestCase(TestCase):
         assert res.json['message'] == 'update is done'
         assert res.json['success'] == 'true'
 
+    def test_create_data(self):
+        
+        res = self.client.get('/api/site')
+        id = res.json['site'][0]['_id']
+        url = '/api/site/' + id + '/data'
+        data = {'price':50,
+                'floor':3,
+                'name':'test'
+                }
+        res = self.client.post(url,
+            data=json.dumps({
+                'data' : data
+            }), content_type='application/json'
+        )
+
+        assert res.json['success'] == 'true'
+
 if __name__ == '__main__':
     unittest.main()
