@@ -56,7 +56,7 @@ class AppTestCase(TestCase):
         ]
         res = self.client.post('/api/site',
             data=json.dumps({
-                'name':'591 rent!',
+                'name':'591 sale',
                 'link':'www.591.com.tw',
                 'rules': rules
             }), content_type='application/json'
@@ -65,10 +65,10 @@ class AppTestCase(TestCase):
         assert res.json['id'] != None
         assert res.json['success'] == "true"
 
-    #def test_list_site(self):
-    #    
-    #    res = self.client.get('/api/site')
-    #    #print res.json
+    def test_list_site(self):
+        
+        res = self.client.get('/api/site')
+        print res.json
     #    #self.site_id = res.json['site'][0]['_id']
 
     #def test_show_site(self):
@@ -110,17 +110,27 @@ class AppTestCase(TestCase):
     #    assert res.json['message'] == 'update is done'
     #    assert res.json['success'] == 'true'
 
-    def test_create_zdata(self):
+
+class testCreateData(TestCase):
+
+    def test_create_data(self):
         self.data.remove()
         
         res = self.client.get('/api/site')
-        print res.data
         id = res.json['site'][0]['_id']
+        print id
         url = '/api/site/' + id + '/data'
         print url
-        data = {'price':50,
-                'floor':3,
-                'name':'test'
+        data = {'name': "真正的好宅~~太子學院",
+                'purpose': "電梯大樓",
+                'layout': "2房2廳2衛1陽台",
+                'price': 698,
+                'unit_price': 17.07,
+                'area': 40.9,
+                'floor': 7,
+                'address': '新北市板橋區龍泉街',
+                'operator': '陳先生',
+                'identity': '房仲'
                 }
         res = self.client.post(url,
             data=json.dumps({

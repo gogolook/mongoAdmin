@@ -4,8 +4,8 @@ from pymongo.objectid import ObjectId
 from datetime import datetime, timedelta
 
 import logging
-LOG_FILENAME = 'debug.log'
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+#LOG_FILENAME = 'debug.log'
+#logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
 
 api = Module(__name__)
@@ -135,7 +135,7 @@ def data(site_id):
         response = []
         for d in data:
             site = g.site.find_one({'_id': d['site_id']})
-            logging.debug('%s',d)
+            #logging.debug('%s',d)
             if 'date' in d:
                 utc_offset = 8*60*60
                 d['date'] = d['date'] + timedelta(seconds=int(utc_offset))
@@ -157,18 +157,18 @@ def data(site_id):
         #TODO: check which field is not be setting
         #check_valid(data)
 
-        logging.debug("%s",site_id)
+        #logging.debug("%s",site_id)
         site = g.site.find_one({'_id': ObjectId(site_id)})
         if not site:
             return error('false','id is wrong')
 
-        logging.debug("%s", site_id)
-        logging.debug("real case:%s", str(g.site.find_one()['_id']))
+        #logging.debug("%s", site_id)
+        #logging.debug("real case:%s", str(g.site.find_one()['_id']))
         data_id = g.data.insert({
             'site_id': ObjectId(site_id),
             'content': data,
             'date': datetime.utcnow()
         })
-        logging.debug("real case:%s", str(g.data.find_one()['site_id']))
+        #logging.debug("real case:%s", str(g.data.find_one()['site_id']))
 
         return ok(id = str(data_id))
