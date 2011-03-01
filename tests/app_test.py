@@ -32,21 +32,20 @@ class TestCase(Base):
     def setUp(self):
         self.db = Connection('localhost', 27017).estate
         self.site = self.db.site
-        self.site_id = ''
+        self.data = self.db.data
 
 class AppTestCase(TestCase):
     
-    def test_site(self):
-        res = self.client.get('/api/site')
-        self.assert200(res)
-        assert res.json['success'] == 'true'
+    #def test_site(self):
+    #    res = self.client.get('/api/site')
+    #    self.assert200(res)
+    #    assert res.json['success'] == 'true'
 
-        res = self.client.post('/api/site',
-                               data=json.dumps({'link':'test123'}),
-                               content_type='application/json')
-        assert res.json['message'] == "site's name is needed"
-        assert res.json['success'] == "false"
-
+    #    res = self.client.post('/api/site',
+    #                           data=json.dumps({'link':'test123'}),
+    #                           content_type='application/json')
+    #    assert res.json['message'] == "site's name is needed"
+    #    assert res.json['success'] == "false"
 
     def test_create_site(self):
         self.site.remove();
@@ -62,60 +61,63 @@ class AppTestCase(TestCase):
                 'rules': rules
             }), content_type='application/json'
         )
-        #print res.data
+        print res.data
         assert res.json['id'] != None
         assert res.json['success'] == "true"
 
-    def test_list_site(self):
+    #def test_list_site(self):
+    #    
+    #    res = self.client.get('/api/site')
+    #    #print res.json
+    #    #self.site_id = res.json['site'][0]['_id']
+
+    #def test_show_site(self):
+    #    
+    #    res = self.client.get('/api/site')
+    #    id = res.json['site'][0]['_id']
+    #    url = '/api/site/' + id
+    #    res = self.client.post(url,
+    #        data=json.dumps({
+    #            'field': 'floor',
+    #            'rule': '<span>floor</span>'
+    #        }), content_type='application/json'
+    #    )
+    #    assert res.json['message'] == 'creation is done'
+    #    assert res.json['success'] == 'true'
+
+    #    res = self.client.post(url,
+    #        data=json.dumps({
+    #            'field': 'floor',
+    #            'rule': '<span>floor</span>'
+    #        }), content_type='application/json'
+    #    )
+    #    
+    #    assert res.json['message'] == 'field is exist'
+    #    assert res.json['success'] == 'false'
+
+    #def test_upate_rule(self):
+
+    #    res = self.client.get('/api/site')
+    #    id = res.json['site'][0]['_id']
+    #    url = '/api/site/' + id
+    #    res = self.client.put(url,
+    #        data=json.dumps({
+    #            'field': 'floor',
+    #            'rule': 'test'
+    #        }), content_type='application/json'
+    #    )
+
+    #    assert res.json['message'] == 'update is done'
+    #    assert res.json['success'] == 'true'
+
+    def test_create_zdata(self):
+        self.data.remove()
         
         res = self.client.get('/api/site')
-        #print res.json
-        #self.site_id = res.json['site'][0]['_id']
-
-    def test_show_site(self):
-        
-        res = self.client.get('/api/site')
-        id = res.json['site'][0]['_id']
-        url = '/api/site/' + id
-        res = self.client.post(url,
-            data=json.dumps({
-                'field': 'floor',
-                'rule': '<span>floor</span>'
-            }), content_type='application/json'
-        )
-        assert res.json['message'] == 'creation is done'
-        assert res.json['success'] == 'true'
-
-        res = self.client.post(url,
-            data=json.dumps({
-                'field': 'floor',
-                'rule': '<span>floor</span>'
-            }), content_type='application/json'
-        )
-        
-        assert res.json['message'] == 'field is exist'
-        assert res.json['success'] == 'false'
-
-    def test_upate_rule(self):
-
-        res = self.client.get('/api/site')
-        id = res.json['site'][0]['_id']
-        url = '/api/site/' + id
-        res = self.client.put(url,
-            data=json.dumps({
-                'field': 'floor',
-                'rule': 'test'
-            }), content_type='application/json'
-        )
-
-        assert res.json['message'] == 'update is done'
-        assert res.json['success'] == 'true'
-
-    def test_create_data(self):
-        
-        res = self.client.get('/api/site')
+        print res.data
         id = res.json['site'][0]['_id']
         url = '/api/site/' + id + '/data'
+        print url
         data = {'price':50,
                 'floor':3,
                 'name':'test'
@@ -126,7 +128,18 @@ class AppTestCase(TestCase):
             }), content_type='application/json'
         )
 
+        print res.data
         assert res.json['success'] == 'true'
+
+    def test_get_data(self):
+        
+        res = self.client.get('/api/site')
+        id = res.json['site'][0]['_id']
+        print id
+        url = '/api/site/' + id + '/data'
+        print url
+        res = self.client.get(url)
+        print res.data
 
 if __name__ == '__main__':
     unittest.main()

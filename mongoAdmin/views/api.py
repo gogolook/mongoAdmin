@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 from flask import Module, g, jsonify, request, make_response
 from pymongo.objectid import ObjectId
+from datetime import datetime, timedelta
 
 import logging
 LOG_FILENAME = 'debug.log'
@@ -126,26 +127,48 @@ def show_site(id):
 
         return error('false','field is not exist')
 
-@api.route('/site/<id>/data', methods=['GET','POST'])
-def data(id):
+@api.route('/site/<site_id>/data', methods=['GET','POST'])
+def data(site_id):
     if request.method == 'GET':
-        pass
+        data = g.data.find().sort('date')
+
+        response = []
+        for d in data:
+            site = g.site.find_one({'_id': d['site_id']})
+            logging.debug('%s',d)
+            if 'date' in d:
+                utc_offset = 8*60*60
+                d['date'] = d['date'] + timedelta(seconds=int(utc_offset))
+                d['date'] = d['date'].strftime('%Y-%m-%d %H:%M:%S')
+
+            response.append(dict(content=d['content'],
+                                 created_at=d['date'],
+                                 site_name=site['name'],
+                                 site_link=site['link']))
+
+        return ok(data = response)
+
     elif request.method == 'POST':
         if not request.json:
             return error('false','it is not a json format')
 
-    data = request.json['data']
+        data = request.json['data']
 
-    #TODO: check which field is not be setting
-    #check_valid(data)
+        #TODO: check which field is not be setting
+        #check_valid(data)
 
-    site = g.site.find_one({'_id': ObjectId(id)})
-    if not site:
-        return error('false','id is wrong')
+        logging.debug("%s",site_id)
+        site = g.site.find_one({'_id': ObjectId(site_id)})
+        if not site:
+            return error('false','id is wrong')
 
-    data_id = g.data.insert({
-        'site_id': id,
-        'data': data
-    })
+        logging.debug("%s", site_id)
+        logging.debug("real case:%s", str(g.site.find_one()['_id']))
+        data_id = g.data.insert({
+            'site_id': ObjectId(site_id),
+            'content': data,
+            'date': datetime.utcnow()
+        })
+        logging.debug("real case:%s", str(g.data.find_one()['site_id']))
 
-    return ok(id = str(data_id))
+        return ok(id = str(data_id))
