@@ -3,9 +3,11 @@ from flask import Module, g, jsonify, request, make_response
 from pymongo.objectid import ObjectId
 from datetime import datetime, timedelta
 
+import urllib
 import logging
-#LOG_FILENAME = 'debug.log'
-#logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+import simplejson
+LOG_FILENAME = '/var/www/mongoAdmin/debug.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
 
 api = Module(__name__)
@@ -130,7 +132,11 @@ def show_site(id):
 @api.route('/site/<site_id>/data', methods=['GET','POST'])
 def data(site_id):
     if request.method == 'GET':
-        data = g.data.find().sort('date')
+        region = request.args.get('region', None)
+
+        search_sql = {}
+        if region: search_sql['info.address'] = {'$regex': urllib.unquote(region)}
+        data = g.data.find(search_sql).sort('date')
 
         response = []
         for d in data:
@@ -141,7 +147,7 @@ def data(site_id):
                 d['date'] = d['date'] + timedelta(seconds=int(utc_offset))
                 d['date'] = d['date'].strftime('%Y-%m-%d %H:%M:%S')
 
-            response.append(dict(content=d['content'],
+            response.append(dict(info=d['info'],
                                  created_at=d['date'],
                                  site_name=site['name'],
                                  site_link=site['link']))
@@ -149,10 +155,17 @@ def data(site_id):
         return ok(data = response)
 
     elif request.method == 'POST':
-        if not request.json:
-            return error('false','it is not a json format')
+        try:
+            if not request.json:
+                return error('false','it is not a json format')
+        except simplejson.decoder.JSONDecodeError:
+            return error('false','check out your json format')
 
-        data = request.json['data']
+	#data = request.json['data']
+	#logging.debug("%s", request.json)
+        data = request.json.get('data', None)
+        if not data:
+            return error('false','no data')
 
         #TODO: check which field is not be setting
         #check_valid(data)
@@ -166,7 +179,7 @@ def data(site_id):
         #logging.debug("real case:%s", str(g.site.find_one()['_id']))
         data_id = g.data.insert({
             'site_id': ObjectId(site_id),
-            'content': data,
+            'info': data,
             'date': datetime.utcnow()
         })
         #logging.debug("real case:%s", str(g.data.find_one()['site_id']))
