@@ -17,6 +17,7 @@ from flaskext.testing import TestCase as Base, Twill
 import unittest
 from pymongo import Connection
 from mongoAdmin import create_app
+import urllib
 
 class TestCase(Base):
     """
@@ -130,7 +131,7 @@ class testCreateData(TestCase):
                 'floor': 7,
                 'address': '新北市板橋區龍泉街',
                 'operator': '陳先生',
-                'identity': '房仲'
+                'house_type': '房仲'
                 }
         res = self.client.post(url,
             data=json.dumps({
@@ -142,12 +143,25 @@ class testCreateData(TestCase):
         assert res.json['success'] == 'true'
 
     def test_get_data(self):
-        
         res = self.client.get('/api/site')
         id = res.json['site'][0]['_id']
         print id
         url = '/api/site/' + id + '/data'
-        print url
+        #print url
+        res = self.client.get(url)
+        #print res.data
+
+    def test_get_query(self):
+        res = self.client.get('api/site')
+        id = res.json['site'][0]['_id']
+        url = '/api/site/' + id + '/data?sdatetime=2011-03-10'
+        res = self.client.get(url)
+        assert res.json['data'] != None
+        url = '/api/site/' + id + '/data?sdatetime=2011-03-11&edatetime=2011-03-13'
+        res = self.client.get(url)
+        print res.data
+        print urllib.quote('房仲')
+        url = '/api/site/' + id + '/data?house_type=' + urllib.quote('房仲')
         res = self.client.get(url)
         print res.data
 

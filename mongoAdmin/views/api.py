@@ -2,10 +2,11 @@
 from flask import Module, g, jsonify, request, make_response
 from pymongo.objectid import ObjectId
 from datetime import datetime, timedelta
-
+import time
 import urllib
-import logging
 import simplejson
+
+import logging
 LOG_FILENAME = '/var/www/mongoAdmin/debug.log'
 logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
@@ -86,7 +87,7 @@ def show_site(id):
     elif request.method == 'POST':
         if not request.json:
             return error('false','this is not json format')
-        
+
         #i18n issue
         field = request.json.get('field', None)
         rule = request.json.get('rule', None)
@@ -129,20 +130,59 @@ def show_site(id):
 
         return error('false','field is not exist')
 
+def getTimeStamp(datetime_str):
+    if datetime_str:
+        d = datetime.strptime(datetime_str, '%Y-%m-%d')
+        return d
+        #return time.mktime(d.timetuple()) + 1e-6 * d.microsecond
+    else:
+        return None
+
+def parseQuery(request):
+    search_sql = {}
+    stimestamp = getTimeStamp(request.args.get('sdatetime', None))
+    etimestamp = getTimeStamp(request.args.get('edatetime', None))
+    house_type = request.args.get('house_type', None)
+    id = request.args.get('id', None)
+    region = request.args.get('region', None)
+
+    if stimestamp or etimestamp:
+        search_sql['date'] = {}
+    if stimestamp:
+        sql = {'$gte': stimestamp}
+        search_sql['date'].update(sql)
+    if etimestamp:
+        sql = {'$lte': etimestamp}
+        search_sql['date'].update(sql)
+    if house_type:
+        search_sql['info.house_type'] = urllib.unquote(house_type)
+    if id:
+        search_sql['_id'] = id
+    if region:
+        search_sql['info.address'] = {'$regex': urllib.unquote(region)}
+
+    return search_sql
+
+    #address = request.args.get('address', None)
+    #address_contain = request.args.get('address_contain', None)
+
 @api.route('/site/<site_id>/data', methods=['GET','POST'])
 def data(site_id):
     if request.method == 'GET':
-        region = request.args.get('region', None)
-
-        search_sql = {}
-        if region: search_sql['info.address'] = {'$regex': urllib.unquote(region)}
-        data = g.data.find(search_sql).sort('date')
+        search_sql = parseQuery(request)
+        limit_num = request.args.get('limit', None)
+        if limit_num:
+            data = g.data.find(search_sql).sort('date').limit(limit_num)
+        else:
+            logging.debug('%s', search_sql)
+            data = g.data.find(search_sql).sort('date')
 
         response = []
         for d in data:
             site = g.site.find_one({'_id': d['site_id']})
             #logging.debug('%s',d)
             if 'date' in d:
+                logging.debug('%s', d['date'])
                 utc_offset = 8*60*60
                 d['date'] = d['date'] + timedelta(seconds=int(utc_offset))
                 d['date'] = d['date'].strftime('%Y-%m-%d %H:%M:%S')
