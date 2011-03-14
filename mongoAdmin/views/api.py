@@ -22,7 +22,7 @@ def before_request():
 
 def error(code, msg):
     response = make_response(jsonify(success = code, message = msg))
-    response.status_code = 404
+    response.status_code = 200
     response.mimetype = 'applcation/json'
     return response
 
@@ -203,8 +203,6 @@ def data(site_id):
         except simplejson.decoder.JSONDecodeError:
             return error('false','check out your json format')
 
-	#data = request.json['data']
-	#logging.debug("%s", request.json)
         data = request.json.get('data', None)
         if not data:
             return error('false','no data')
@@ -212,18 +210,23 @@ def data(site_id):
         #TODO: check which field is not be setting
         #check_valid(data)
 
-        #logging.debug("%s",site_id)
         site = g.site.find_one({'_id': ObjectId(site_id)})
         if not site:
             return error('false','id is wrong')
 
-        #logging.debug("%s", site_id)
-        #logging.debug("real case:%s", str(g.site.find_one()['_id']))
-        data_id = g.data.insert({
-            'site_id': ObjectId(site_id),
-            'info': data,
-            'date': datetime.utcnow()
-        })
-        #logging.debug("real case:%s", str(g.data.find_one()['site_id']))
+        gdata = g.data.find_one({'site_id': ObjectId(site_id),
+                                'info.address': data['address'],
+                                'info.name': data['name']})
+        if gdata:
+            gdata['info'] = data
+            gdata['update_date'] = datetime.utcnow()
+            data_id = g.data.save(gdata)
+        else:
+            data_id = g.data.insert({
+                'site_id': ObjectId(site_id),
+                'info': data,
+                'date': datetime.utcnow(),
+                'update_date': datetime.utcnow()
+            })
 
         return ok(id = str(data_id))

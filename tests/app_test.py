@@ -139,6 +139,13 @@ class testCreateData(TestCase):
             }), content_type='application/json'
         )
 
+        data['floor'] = 8
+        res = self.client.post(url,
+            data=json.dumps({
+                'data' : data
+            }), content_type='application/json'
+        )
+
         print res.data
         assert res.json['success'] == 'true'
 
