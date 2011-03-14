@@ -168,14 +168,16 @@ def parseQuery(request):
 
 @api.route('/site/<site_id>/data', methods=['GET','POST'])
 def data(site_id):
+    site = g.site.find_one({'_id': ObjectId(site_id)})
+    if not site:
+        return error('false','id is wrong')
+
     if request.method == 'GET':
         search_sql = parseQuery(request)
-        limit_num = request.args.get('limit', None)
-        if limit_num:
-            data = g.data.find(search_sql).sort('date').limit(limit_num)
-        else:
-            logging.debug('%s', search_sql)
-            data = g.data.find(search_sql).sort('date')
+        search_sql['site_id'] = ObjectId(site_id)
+        limit_num = request.args.get('limit', 20)
+
+        data = g.data.find(search_sql).sort('date').limit(limit_num)
 
         response = []
         for d in data:
