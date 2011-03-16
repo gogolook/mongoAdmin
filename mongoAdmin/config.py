@@ -25,3 +25,6 @@ class DefaultConfig(object):
 
     CACHE_TYPE = 'simple'
     CACHE_DEFAULT_TIMEOUT = 300
+
+    CRAWLER_DIR = '/home/kakashi/python/estate_crawler'
+    DB_HOST = '173.255.240.110'

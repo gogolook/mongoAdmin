@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body %}
+    <form action="{{ url_for('add_crawler') }}" method=post class=add-crawler>
+        <p>英文名稱：<input type=text size=20 name=eng_name></p>
+        <p>中文名稱：<input type=text size=20 name=chi_name></p>
+        <p>目標網址：<input type=text size=20 name=url></p>
+        <p>爬取網址：<input type=text size=20 name=regex_url></p>
+        <p>規則：<button id="addRule">增加規則</button></p>
+        <div id="rules">
+        欄位名稱(英文)：<input type=text size=10 name=eng_field>中文敘述：<input type=text size=10 name=chi_field><br/>
+        規則：<input type=text size=30 name=rule>
+        </div>
+        <input type=submit value=建立>
+    </form>
+    <script type="text/javascript">
+        $('#addRule').click(function(){
+            $('#rules').append("<div>欄位名稱(英文)：<input type=text size=10 name=eng_field>中文敘述：<input type=text size=10 name=chi_field><br/> 規則：<input type=text size=30 name=rule></div>");
+            return false;
+        });
+    </script>
+  <ul class=entries>
+  {% for entry in entries %}
+    <li><h2>{{ entry.eng_name }}</h2>{{ entry.url|safe }}
+  {% else %}
+    <li><em>Unbelievable.  No entries here so far</em>
+  {% endfor %}
+  </ul>
+{% endblock %}

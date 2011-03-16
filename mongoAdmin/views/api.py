@@ -7,8 +7,8 @@ import urllib
 import simplejson
 
 import logging
-LOG_FILENAME = '/var/www/mongoAdmin/debug.log'
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+#LOG_FILENAME = '/var/www/mongoAdmin/debug.log'
+#logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
 
 api = Module(__name__)
