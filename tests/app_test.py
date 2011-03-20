@@ -116,7 +116,7 @@ class testCreateData(TestCase):
 
     def test_create_data(self):
         self.data.remove()
-        
+
         res = self.client.get('/api/site')
         id = res.json['site'][0]['_id']
         print id
@@ -131,7 +131,9 @@ class testCreateData(TestCase):
                 'floor': 7,
                 'address': '新北市板橋區龍泉街',
                 'operator': '陳先生',
-                'house_type': '房仲'
+                'house_type': '房仲',
+                'url': 'http://gogolook.com.tw',
+                'title': '張先生'
                 }
         res = self.client.post(url,
             data=json.dumps({
@@ -140,6 +142,25 @@ class testCreateData(TestCase):
         )
 
         data['floor'] = 8
+        res = self.client.post(url,
+            data=json.dumps({
+                'data' : data
+            }), content_type='application/json'
+        )
+
+        data = {'name': "真正的好宅~~太子學院2",
+                'purpose': "電梯大樓",
+                'layout': "2房2廳2衛1陽台",
+                'price': 698,
+                'unit_price': 17.07,
+                'area': 40.9,
+                'floor': 7,
+                'address': '新北市大安區龍泉街',
+                'operator': '陳先生',
+                'house_type': '代理人',
+                'url': 'http://gogolook.com.tw',
+                'title': '陳小姐'
+                }
         res = self.client.post(url,
             data=json.dumps({
                 'data' : data
@@ -161,14 +182,16 @@ class testCreateData(TestCase):
     def test_get_query(self):
         res = self.client.get('api/site')
         id = res.json['site'][0]['_id']
-        url = '/api/site/' + id + '/data?sdatetime=2011-03-10'
-        res = self.client.get(url)
-        assert res.json['data'] != None
-        url = '/api/site/' + id + '/data?sdatetime=2011-03-11&edatetime=2011-03-13'
-        res = self.client.get(url)
-        print res.data
-        print urllib.quote('房仲')
-        url = '/api/site/' + id + '/data?house_type=' + urllib.quote('房仲')
+        #url = '/api/site/' + id + '/data'
+        #res = self.client.get(url)
+        #print res.data
+        #assert res.json['data'] != None
+        #url = '/api/site/' + id + '/data?sdatetime=2011-03-11&edatetime=2011-03-13'
+        #res = self.client.get(url)
+        #print res.data
+        #print urllib.quote('房仲')
+        #url = '/api/site/' + id + '/data?house_type=' + urllib.quote('代理人')
+        url = '/api/site/' + id + '/data?address_contain=' + urllib.quote('板橋') + "," + urllib.quote('大安')
         res = self.client.get(url)
         print res.data
 

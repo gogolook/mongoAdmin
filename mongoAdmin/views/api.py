@@ -132,8 +132,12 @@ def show_site(id):
 
 def getTimeStamp(datetime_str):
     if datetime_str:
-        d = datetime.strptime(datetime_str, '%Y-%m-%d')
-        return d
+        try:
+            utc_offset = 8*60*60
+            d = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M') - timedelta(seconds=int(utc_offset))
+            return d
+        except ValueError:
+            return None
         #return time.mktime(d.timetuple()) + 1e-6 * d.microsecond
     else:
         return None
@@ -144,7 +148,7 @@ def parseQuery(request):
     etimestamp = getTimeStamp(request.args.get('edatetime', None))
     house_type = request.args.get('house_type', None)
     id = request.args.get('id', None)
-    region = request.args.get('region', None)
+    address_contain = request.args.get('address_contain', None)
 
     if stimestamp or etimestamp:
         search_sql['date'] = {}
@@ -155,16 +159,16 @@ def parseQuery(request):
         sql = {'$lte': etimestamp}
         search_sql['date'].update(sql)
     if house_type:
-        search_sql['info.house_type'] = urllib.unquote(house_type)
+        regex = urllib.unquote(house_type.replace(',','|'))
+        search_sql['info.house_type'] = {"$regex": regex}
     if id:
-        search_sql['_id'] = id
-    if region:
-        search_sql['info.address'] = {'$regex': urllib.unquote(region)}
+        regex = id.replace(',','|')
+        search_sql['_id'] = {"$regex": regex}
+    if address_contain:
+        regex = urllib.unquote(address_contain.replace(',','|'))
+        search_sql['info.address'] = {"$regex": regex}
 
     return search_sql
-
-    #address = request.args.get('address', None)
-    #address_contain = request.args.get('address_contain', None)
 
 @api.route('/site/<site_id>/data', methods=['GET','POST'])
 def data(site_id):
@@ -177,7 +181,7 @@ def data(site_id):
         search_sql['site_id'] = ObjectId(site_id)
         limit_num = request.args.get('limit', 20)
 
-        data = g.data.find(search_sql).sort('date').limit(limit_num)
+        data = g.data.find(search_sql).sort('-date').limit(int(limit_num))
 
         response = []
         for d in data:
@@ -230,3 +234,11 @@ def data(site_id):
             })
 
         return ok(id = str(data_id))
+
+@api.route('/ip', methods=['GET'])
+def ip():
+    if request.method == 'GET':
+        ip = request.args.get('ip', None)
+        if ip:
+            return ok(ip = ip)
+        return ok(ip = '1')
