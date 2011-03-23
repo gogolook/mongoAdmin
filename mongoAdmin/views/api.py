@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
 from flask import Module, g, jsonify, request, make_response
 from pymongo.objectid import ObjectId
+from pymongo import DESCENDING
 from datetime import datetime, timedelta
 import time
 import urllib
@@ -181,7 +182,7 @@ def data(site_id):
         search_sql['site_id'] = ObjectId(site_id)
         limit_num = request.args.get('limit', 20)
 
-        data = g.data.find(search_sql).sort('-date').limit(int(limit_num))
+        data = g.data.find(search_sql).sort('update_date', DESCENDING).limit(int(limit_num))
 
         response = []
         for d in data:

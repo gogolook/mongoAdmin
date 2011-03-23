@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-from flask import Module, g, jsonify, request, render_template, make_response
+from flask import Module, g, jsonify, request, render_template, make_response, redirect
 from pymongo.objectid import ObjectId
 import simplejson
 import os
@@ -20,14 +20,21 @@ def index():
     return "Estate Db Restful Api"
 
 @web.route("/crawler", methods=['GET', 'POST'])
-def add_crawler():
+def list_crawler():
     """
     GET: get site's data
     POST: create new site
     """
     if request.method == 'GET':
-        entries = g.site.find_one()
-        return render_template('create_crawler.html', entries = entries)
+        entries = []
+        for entry in g.site.find():
+            entries.append(entry)
+        return render_template('list_crawler.html', entries = entries)
+
+@web.route("/crawler/create", methods=['GET', 'POST'])
+def create_crawler():
+    if request.method == 'GET':
+        return render_template('create_crawler.html')
     if request.method == 'POST':
         eng_name = request.form.get('eng_name', None)
         chi_name = request.form.get('chi_name', None)
@@ -81,3 +88,9 @@ def add_crawler():
                               rules = rules))
 
         return response
+
+@web.route("/crawler/update/<site_id>", methods=['GET', 'POST'])
+def update_crawler(site_id):
+    if request.method == 'GET':
+        entries = g.site.find_one({'_id': site_id})
+        return render_template('update_crawler.html', entries = entries)
