@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-    <form action="{{ url_for('add_crawler') }}" method=post class=add-crawler>
+    <form action="{{ url_for('create_crawler') }}" method=post class=add-crawler>
         <p>英文名稱：<input type=text size=20 name=eng_name></p>
         <p>中文名稱：<input type=text size=20 name=chi_name></p>
         <p>目標網址：<input type=text size=20 name=url></p>

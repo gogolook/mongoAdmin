@@ -6,7 +6,7 @@
        <label>ID</label> {{ entry._id }}
        <label>連結</label> {{ entry.link}}
        <label>名稱</label> {{ entry.name}}
-       <a href="{{ url_for('update_crawler') }}/{{ entry._id}}">"修改規則"</a>
+       <a href="{{ url_for('update_crawler', site_id=entry._id) }}">"修改規則"</a>
     </li>
   {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
